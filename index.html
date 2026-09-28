@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log Kehadiran Imam/Bilal</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width:400px; margin:30px auto; padding:0 15px; }
+    label { display:block; margin-top:12px; font-weight:bold; }
+    select, textarea { width:100%; padding:8px; margin-top:4px; box-sizing:border-box; }
+    button { margin-top:20px; padding:10px; width:100%; background:#1F4E78; color:#fff; border:none; border-radius:4px; font-size:16px; }
+    button:disabled { background:#999; }
+    #status2 { margin-top:15px; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <h2>Log Kehadiran Imam/Bilal</h2>
+  <label>Nama</label>
+  <select id="nama">
+    <option>SYAFIQ</option><option>SHAHRUL</option><option>AZFAR</option>
+    <option>ADHA</option><option>MUJAHIDDIN</option><option>NADJMI</option><option>ZAFRAN</option>
+  </select>
+  <label>Waktu Solat</label>
+  <select id="waktu">
+    <option>SUBUH</option><option>ZOHOR</option><option>ASAR</option><option>MAGHRIB</option><option>ISYAK</option>
+  </select>
+  <label>Status</label>
+  <select id="status">
+    <option>Hadir</option><option>Lewat</option><option>Tiada Hadir</option><option>Ada Ganti</option>
+  </select>
+  <label>Disahkan Oleh (Pilihan)</label>
+  <select id="saksi">
+    <option value="">- Tiada -</option>
+    <option>SYAFIQ</option><option>SHAHRUL</option><option>AZFAR</option>
+    <option>ADHA</option><option>MUJAHIDDIN</option><option>NADJMI</option><option>ZAFRAN</option>
+  </select>
+  <label>Catatan (Pilihan)</label>
+  <textarea id="catatan" rows="2"></textarea>
+  <button id="btn" onclick="hantar()">Hantar</button>
+  <p id="status2"></p>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzi02L0W83yK0HSqZoxNHy_FpVx3nfGe-v6A_0tSyrn5h5ze7Uxf3imAbe6cKz_Ff2NfQ/exec';
+var token = new URLSearchParams(window.location.search).get('t') || '';
+var lokasiTeks = '';
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    lokasiTeks = pos.coords.latitude.toFixed(6) + ', ' + pos.coords.longitude.toFixed(6);
+  }, function() {});
+}
+
+function hantar() {
+  var btn = document.getElementById('btn');
+  var msg = document.getElementById('status2');
+  btn.disabled = true;
+  msg.innerText = 'Menghantar...';
+
+  var data = {
+    nama: document.getElementById('nama').value,
+    waktu: document.getElementById('waktu').value,
+    status: document.getElementById('status').value,
+    saksi: document.getElementById('saksi').value,
+    catatan: document.getElementById('catatan').value,
+    lokasi: lokasiTeks,
+    token: token
+  };
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    msg.innerText = res.msg;
+    setTimeout(function() { btn.disabled = false; }, 4000);
+  })
+  .catch(function() {
+    msg.innerText = 'Gagal menghubungi pelayan. Semak internet dan cuba lagi.';
+    btn.disabled = false;
+  });
+}
+</script>
+</body>
+</html>
