@@ -7,7 +7,7 @@
   <style>
     body { font-family: Arial, sans-serif; max-width:400px; margin:30px auto; padding:0 15px; }
     label { display:block; margin-top:12px; font-weight:bold; }
-    select, textarea { width:100%; padding:8px; margin-top:4px; box-sizing:border-box; }
+    select, textarea, input { width:100%; padding:8px; margin-top:4px; box-sizing:border-box; font-size:16px; }
     button { margin-top:20px; padding:10px; width:100%; background:#1F4E78; color:#fff; border:none; border-radius:4px; font-size:16px; }
     button:disabled { background:#999; }
     #status2 { margin-top:15px; font-weight:bold; }
@@ -20,6 +20,8 @@
     <option>SYAFIQ</option><option>SHAHRUL</option><option>AZFAR</option>
     <option>ADHA</option><option>MUJAHIDDIN</option><option>NADJMI</option><option>ZAFRAN</option>
   </select>
+  <label>PIN Peribadi</label>
+  <input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="Masukkan PIN anda">
   <label>Waktu Solat</label>
   <select id="waktu">
     <option>SUBUH</option><option>ZOHOR</option><option>ASAR</option><option>MAGHRIB</option><option>ISYAK</option>
@@ -53,11 +55,20 @@ if (navigator.geolocation) {
 function hantar() {
   var btn = document.getElementById('btn');
   var msg = document.getElementById('status2');
+  var pinEl = document.getElementById('pin');
+  var pin = pinEl.value.replace(/\s/g, '');
+
+  if (!/^\d{4,6}$/.test(pin)) {
+    msg.innerText = 'Sila masukkan PIN peribadi anda (4 hingga 6 digit).';
+    return;
+  }
+
   btn.disabled = true;
   msg.innerText = 'Menghantar...';
 
   var data = {
     nama: document.getElementById('nama').value,
+    pin: pin,
     waktu: document.getElementById('waktu').value,
     status: document.getElementById('status').value,
     saksi: document.getElementById('saksi').value,
@@ -74,7 +85,12 @@ function hantar() {
   .then(function(r) { return r.json(); })
   .then(function(res) {
     msg.innerText = res.msg;
-    setTimeout(function() { btn.disabled = false; }, 4000);
+    if (res.ok) {
+      pinEl.value = '';
+      setTimeout(function() { btn.disabled = false; }, 4000);
+    } else {
+      btn.disabled = false;
+    }
   })
   .catch(function() {
     msg.innerText = 'Gagal menghubungi pelayan. Semak internet dan cuba lagi.';
